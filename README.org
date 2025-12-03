@@ -1,0 +1,33 @@
+* Repository layout
+#+begin_src shell
+azure-three-layer-terraform/
+├── README.md
+├── environments/
+│ ├── dev.tfvars
+│ └── prod.tfvars
+├── global/ # global infra (resource groups for shared services, backends)
+│ ├── backend.tf
+│ └── providers.tf
+├── modules/
+│ ├── network/
+│ │ ├── main.tf
+│ │ ├── variables.tf
+│ │ └── outputs.tf
+│ ├── security/
+│ │ ├── main.tf
+│ │ ├── variables.tf
+│ │ └── outputs.tf
+│ ├── compute/
+│ │ ├── main.tf
+│ │ ├── variables.tf
+│ │ └── outputs.tf
+│ └── db/
+│ ├── main.tf
+│ ├── variables.tf
+│ └── outputs.tf
+├── staging/ # example environment that composes modules
+│ ├── main.tf
+│ ├── variables.tf
+│ └── outputs.tf
+└── versions.tf
+#+end_src
