@@ -46,7 +46,6 @@ azure-three-layer-terraform/
   + *db* — managed DB (MySQL shown) with private access and firewall rule example
 - Root environment example (staging) that composes the modules.
 - Remote-state backend example using *azurerm* storage account.
-- =versions.tf= locking terraform + provider ranges.
 
 ** Architecture overview (three-layer, Azure-focused)
 - Presentation (web) layer in its own spoke VNet/subnet, fronted by Application Gateway (WAF) or public LB.
@@ -59,7 +58,7 @@ azure-three-layer-terraform/
 2. *Azure Firewall + NSGs* — firewall for east-west and perimeter rules; NSGs for subnet-level micro-segmentation. Use firewall for inspection and NSGs for fast path filtering. Azure docs/tech guidance confirm this pattern. 
 3. *Managed DB with private access* — keep DBs off public internet and restrict access from app subnets only. (The example module configures firewall rules and disables public access.)
 4. *Remote state + locking* — store Terraform state in an Azure Storage Account container with blob locking or use Terraform Cloud. Avoid local state for teams.
-5. *Modules & standard structure* — keep reusable modules (network, security, compute, db) to make environments (dev/staging/prod) easy to manage and test. Follow Terraform module structure guidance. 
+5. *Modules & standard structure* — keep reusable modules (network, security, compute, db) to make environments (dev/staging/prod) easy to manage and test.
 
 
 * Quickstart
@@ -74,9 +73,6 @@ terraform apply -var-file=environments/dev.tfvars
 
 * Roadmap WIP
 - [ ] Add CI pipeline
-- [ ] optional modules for AKS
-- [ ] Application Gateway (WAF)
-- [ ] Azure Monitor
-- [ ] =modules/appgw/= for Application Gateway + WAF module.
-- [ ] =modules/aks/= if you prefer containers (AKS + managed identities).
-- [ ] =modules/monitoring/= for Log Analytics workspace, diagnostic settings, alerts.
+- [ ] =modules/appgw/= for Application Gateway + WAF module
+- [ ] =modules/aks/= if using containers (AKS + managed identities)
+- [ ] =modules/monitoring/= for Log Analytics workspace, diagnostic settings, alerts
