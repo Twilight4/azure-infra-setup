@@ -184,8 +184,27 @@ az storage account list -g rg-tfstate -o table
 
 ** Clean up
 #+begin_src shell
-# to remove all resources and avoid charges:
+# Remove all terraform resources and avoid charges
 terraform destroy -var-file=../../environments/dev.tfvars
+
+# Remove service principal named tf-sp-learning
+az ad sp delete --id tf-sp-learning
+
+# Remove a blob container for terraform state named tfstatestorage4123
+az storage container delete \
+  --name tfstatestorage<UNIQUE> \
+  --account-name tfstatestorage<UNIQUE>
+
+# Remove storage account for that rg-tfstate resource group named tfstatestorage<UNIQUE>
+az storage account delete \
+  --name tfstatestorage<UNIQUE> \
+  --resource-group rg-tfstate \
+  --yes
+
+# Remove a resource group named rg-tfstate
+az group delete \
+  --name rg-tfstate \
+  --yes --no-wait
 #+end_src
 
 * Roadmap WIP
