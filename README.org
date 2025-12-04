@@ -8,24 +8,24 @@ azure-three-layer-terraform/
 ├── environments/
 │ ├── dev.tfvars
 │ └── prod.tfvars
-├── global/ # global infra (resource groups for shared services, backends)
-│ ├── backend.tf
+├── global/
+│ ├── backend.tf # example remote state using azurerm storage account
 │ └── providers.tf
 ├── modules/
 │ ├── network/
-│ │ ├── main.tf
+│ │ ├── main.tf # hub-and-spoke / vnet + subnets + peering + route tables + NAT
 │ │ ├── variables.tf
 │ │ └── outputs.tf
 │ ├── security/
-│ │ ├── main.tf
+│ │ ├── main.tf # Azure Firewall, NSGs, Route Tables, Key Vault policies
 │ │ ├── variables.tf
 │ │ └── outputs.tf
 │ ├── compute/
-│ │ ├── main.tf
+│ │ ├── main.tf # VM scale set or AKS plus application gateway / load balancer
 │ │ ├── variables.tf
 │ │ └── outputs.tf
 │ └── db/
-│ ├── main.tf
+│ ├── main.tf # Azure Database for PostgreSQL / MySQL / or managed SQL
 │ ├── variables.tf
 │ └── outputs.tf
 ├── staging/ # example environment that composes modules
@@ -140,10 +140,10 @@ az storage container create --name tfstate --account-name tfstatestorage<UNIQUE>
 
 Then update =global/backend.tf= to point at this container.
 #+begin_src tf
-resource_group_name  = "rg-tfstate"
-storage_account_name = "tfstatestorage<UNIQUE>"
-container_name       = "tfstate"
-key                  = "dev.terraform.tfstate"
+resource_group_name  = "rg-tfstate"                        # Resource group where the storage account lives
+storage_account_name = "tfstatestorage<UNIQUE>"            # Storage account name (must be globally unique)
+container_name       = "tfstate"                           # Container inside the storage account used to store the state blob
+key                  = "dev.terraform.tfstate"             # Key path for the specific state file (use different keys per environment)
 #+end_src
 
 ** Deploy the infrastructure
