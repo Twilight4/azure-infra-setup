@@ -1,8 +1,7 @@
 * Azure 3-layer Terraform
 This repo demonstrates a secure, scalable three-layer (web/app/db) Azure architecture using Terraform modules. It follows hub-and-spoke network pattern, central security services (Azure Firewall + NSGs), managed DBs with private network access, and scaleable compute.
 
-
-* Repository layout
+** Repository layout
 #+begin_src shell
 azure-three-layer-terraform/
 ├── README.md
@@ -36,9 +35,8 @@ azure-three-layer-terraform/
 └── versions.tf
 #+end_src
 
-
-* Project overview
-** Repo
+** Project overview
+*** Repo
 - Modular layout with these modules:
   + *network* — hub-and-spoke VNet(s), peering, NAT/route table hooks
   + *security* — Azure Firewall, NSGs, route tables, basic Key Vault wiring
@@ -47,13 +45,13 @@ azure-three-layer-terraform/
 - Root environment example (staging) that composes the modules.
 - Remote-state backend example using *azurerm* storage account.
 
-** Architecture overview (three-layer, Azure-focused)
-- Presentation (web) layer in its own spoke VNet/subnet, fronted by Application Gateway (WAF) or public LB.
-- Application (app) layer in a separate spoke — hosts app server VMSS or AKS.
-- Data (db) layer in its own spoke containing managed DB services (Azure Database for PostgreSQL / MySQL / SQL) with =public_network_access_enabled = false= so only private connectivity is allowed.
-- Shared Hub VNet contains central services: Azure Firewall, VPN/ExpressRoute gateways, NAT, and peering to spokes. This follows Azure =hub-and-spoke= best practices. 
+*** Architecture overview (three-layer, Azure-focused)
+- *Presentation (web) layer* in its own spoke VNet/subnet, fronted by Application Gateway (WAF) or public LB.
+- *Application (app) layer* in a separate spoke — hosts app server VMSS or AKS.
+- *Data (db) layer* in its own spoke containing managed DB services (Azure Database for PostgreSQL / MySQL / SQL) with =public_network_access_enabled = false= so only private connectivity is allowed.
+- *Shared Hub VNet* contains central services: Azure Firewall, VPN/ExpressRoute gateways, NAT, and peering to spokes. This follows Azure =hub-and-spoke= best practices. 
 
-** Key security and operational choices
+*** Key security and operational choices
 1. *Hub-and-spoke networking* — centralizes security, simplifies routing and egress, isolates workloads.
 2. *Azure Firewall + NSGs* — firewall for east-west and perimeter rules; NSGs for subnet-level micro-segmentation. Use firewall for inspection and NSGs for fast path filtering. Azure docs/tech guidance confirm this pattern. 
 3. *Managed DB with private access* — keep DBs off public internet and restrict access from app subnets only. (The example module configures firewall rules and disables public access.)
@@ -61,18 +59,141 @@ azure-three-layer-terraform/
 5. *Modules & standard structure* — keep reusable modules (network, security, compute, db) to make environments (dev/staging/prod) easy to manage and test.
 
 
-* Quickstart
+* Steps to deploy
+** Prerequisites
+- Azure subscription (Owner or Contributor role)
+- Azure CLI installed (az)
+- Terraform installed (terraform)
+- Git
+
+** Authenticate with Azure
+Service principal is safer for CI/CD, but interactive login is fine for learning.
+
+**** Option A — Interactive login (simplest)
 #+begin_src shell
-terraform init
-
-terraform plan -var-file=environments/dev.tfvars
-
-terraform apply -var-file=environments/dev.tfvars
+# Your Azure CLI will use your logged-in account for Terraform.
+az login
 #+end_src
 
+**** Option B — Service Principal (recommended for automation)
+#+begin_src shell
+# Create a service principal (replace <subscription-id>)
+az ad sp create-for-rbac --name "tf-sp-learning" --role Contributor --scopes /subscriptions/<subscription-id>
+
+# Verify the created service principal
+az ad sp list --display-name tf-sp-learning -o table
+
+# To see more details for tf-sp-learning (The secret can't be viewed again)
+az ad sp list --display-name tf-sp-learning -o json | jq
+
+# Note the output
+{
+  "appId": "...",
+  "password": "...",
+  "tenant": "..."
+}
+
+# Set environment variables for Terraform
+# If you use interactive login, these are not strictly needed, but required if using SP
+export ARM_CLIENT_ID="<appId>"
+export ARM_CLIENT_SECRET="<password>"
+export ARM_TENANT_ID="<tenant>"
+
+# To list subscription ids
+az account list -o table
+
+# To check subscription-id
+az account show --query id -o tsv
+
+# Export subscription ID
+export ARM_SUBSCRIPTION_ID="<subscription-id>"
+
+# Log in to service principal
+az logout
+az login --service-principal \
+  -u <appId> -p <password> --tenant <tenantId>
+#+end_src
+
+** Create Terraform State Backend
+Terraform needs a remote backend to store its state.
+
+#+begin_src shell
+# Create a resource group
+az group create -n rg-tfstate -l <REGION>
+
+# Create a storage account (account name must be globally unique)
+az storage account create \
+  --name tfstatestorage<UNIQUE> \
+  --resource-group rg-tfstate \
+  --location westeurope \
+  --sku Standard_LRS \
+  --subscription <subscription-id>
+
+# To List all resource groups located in the west europe region
+az group list --query "[?location=='westeurope']"
+
+# Get storage account key
+KEY=$(az storage account keys list -g rg-tfstate -n tfstatestorage<UNIQUE> --query "[0].value" -o tsv)
+# Create a blob container for terraform state
+az storage container create --name tfstate --account-name tfstatestorage<UNIQUE> --account-key $KEY
+#+end_src
+
+Then update =global/backend.tf= to point at this container.
+#+begin_src tf
+resource_group_name  = "rg-tfstate"
+storage_account_name = "tfstatestorage<UNIQUE>"
+container_name       = "tfstate"
+key                  = "dev.terraform.tfstate"
+#+end_src
+
+** Deploy the infrastructure
+#+begin_src shell
+# Go to the environment folder:
+cd environments/dev
+
+# Initialize Terraform (If you changed backend settings, you need to run terraform init -reconfigure)
+terraform init -reconfigure
+
+# Preview changes
+terraform plan -var-file=../../environments/dev.tfvars
+
+# Apply changes - this will create all resources: VNets, subnets, firewall, VM Scale Set, database, etc
+terraform apply -var-file=../../environments/dev.tfvars
+#+end_src
+
+** Verify deployment
+Using Azure Portal
+- Go to [[https://portal.azure.com/][portal.azure.com]]
+- Navigate to =Resource Groups= → select your environment group (e.g., =rg-dev=)
+- Verify the resources exist
+
+Using Azure CLI
+#+begin_src shell
+# check the resource group and resources
+az group list -o table
+
+# List virtual networks in the RG
+az network vnet list -g rg-dev -o table
+
+# Show firewall public IP
+az network public-ip show -g rg-staging -n stg-fw-pip --query "{ip: ipAddress}" -o tsv
+
+# Show storage account for the resource group
+az storage account list -g rg-tfstate -o table
+#+end_src
+
+** Clean up
+#+begin_src shell
+# to remove all resources and avoid charges:
+terraform destroy -var-file=../../environments/dev.tfvars
+#+end_src
 
 * Roadmap WIP
+- [ ] Use Azure Key Vault to provide secrets (DB password, etc.) and do not store secrets in git or =.tfvars= checked into source.
 - [ ] Add CI pipeline
 - [ ] =modules/appgw/= for Application Gateway + WAF module
 - [ ] =modules/aks/= if using containers (AKS + managed identities)
 - [ ] =modules/monitoring/= for Log Analytics workspace, diagnostic settings, alerts
+- [ ] Put compute behind Azure Load Balancer (internal) or Application Gateway (WAF+TLS termination). Use VMSS or AKS to scale application layer.
+- [ ] Use Availability Zones where available for Firewall PIP and compute resources like VMSS/DB (or zone-redundant SKUs). See Azure Firewall deploy docs for zone examples. 
+- [ ] Monitor and autoscale using Azure Monitor autoscale rules and alerts.
