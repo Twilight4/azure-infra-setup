@@ -3,8 +3,8 @@ output "spoke_vnets" {
   value = { for k, v in azurerm_virtual_network.spoke_vnet : k => v.id }
 }
 
-output "private_endpoint_subnet_id" {
-  value = azurerm_subnet.private_endpoint_subnet.id
+output "spoke_subnet_ids" {
+  value = { for k, v in azurerm_subnet.spoke_subnet : k => v.id }
 }
 
 output "resource_group_name" {

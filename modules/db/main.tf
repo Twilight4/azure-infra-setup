@@ -9,8 +9,8 @@ resource "azurerm_mssql_server" "db_server" {
   administrator_login          = var.db_admin
   administrator_login_password = var.db_password
 
-  # Disable public access (use Private Endpoint only)
-  public_network_access_enabled = false
+  # Allow public access for free-tier app service access
+  public_network_access_enabled = true
 }
 
 # Create the Free 250 MB SQL Database

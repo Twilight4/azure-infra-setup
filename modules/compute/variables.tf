@@ -1,30 +1,19 @@
 variable "resource_group_name" {
   type = string
 }
-
 variable "location" {
   type = string
 }
-
 variable "prefix" {
   type = string
 }
 
-variable "instance_count" {
-  type    = number
-  default = 2
+variable "database_hostname" {
+  type = string
 }
-
-variable "vm_sku" {
-  type    = string
-  default = "Standard_DS2_v2"
+variable "database_username" {
+  type = string
 }
-
-variable "admin_username" {
-  type    = string
-  default = "azureuser"
-}
-
-variable "app_subnet_id" {
+variable "database_password" {
   type = string
 }

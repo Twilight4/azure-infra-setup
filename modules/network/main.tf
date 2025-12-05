@@ -5,8 +5,6 @@ resource "azurerm_resource_group" "rg" {
 }
 
 # Create the hub virtual network which will host shared services
-# (NAT, gateways). The hub address space can be larger to
-# accommodate multiple spoke routable ranges.
 resource "azurerm_virtual_network" "hub_vnet" {
   name                = "${var.prefix}-hub-vnet"
   address_space       = var.hub_address_space
@@ -39,37 +37,4 @@ resource "azurerm_subnet" "spoke_subnet" {
   # If spokes passed a specific subnet prefix map, prefer that, else
   # leave it to be provided by a higher-level variable.
   address_prefixes = lookup(var.spokes, each.key, {}).subnet_prefixes
-}
-
-# VNet peering from hub -> spoke. We create peering entries in the hub
-# for each spoke, enabling forwarded traffic and transit if needed.
-resource "azurerm_virtual_network_peering" "hub_to_spoke" {
-  for_each = azurerm_virtual_network.spoke_vnet
-
-  name                      = "hub-to-${each.key}"
-  resource_group_name       = azurerm_resource_group.rg.name
-  virtual_network_name      = azurerm_virtual_network.hub_vnet.name
-  remote_virtual_network_id = each.value.id
-
-  # Allow hub to forward traffic to spokes and (optionally) allow
-  # gateway transit when a hub has a gateway and you want spokes to
-  # use the hub's gateway.
-  allow_forwarded_traffic = true
-  allow_gateway_transit   = var.allow_gateway_transit
-  use_remote_gateways     = false
-}
-
-# Optionally create the reverse peering (spoke -> hub). Some setups
-# require both sides to be peered explicitly; doing both sides here
-# ensures traffic can route in both directions.
-resource "azurerm_virtual_network_peering" "spoke_to_hub" {
-  for_each = azurerm_virtual_network.spoke_vnet
-
-  name                      = "${each.key}-to-hub"
-  resource_group_name       = azurerm_resource_group.rg.name
-  virtual_network_name      = each.value.name
-  remote_virtual_network_id = azurerm_virtual_network.hub_vnet.id
-
-  allow_forwarded_traffic = true
-  use_remote_gateways     = var.allow_gateway_transit
 }

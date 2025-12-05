@@ -12,3 +12,9 @@ variable "prefix" {
   type        = string
   description = "Naming prefix."
 }
+
+variable "web_subnet_id" {
+  type    = string
+  default = ""
+}
+
