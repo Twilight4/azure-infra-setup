@@ -34,3 +34,40 @@ module "security" {
   # Pass the hub firewall subnet id so the firewall can be deployed there.
   firewall_subnet_id = module.network.hub_firewall_subnet_id
 }
+
+module "compute" {
+  source = "../modules/compute"
+
+  resource_group_name = "rg-staging"
+  location            = "westeurope"
+  prefix              = "stg"
+
+  # initial instance count; use autoscale resource for production scaling policies
+  instance_count = 2
+  vm_sku         = "Standard_DS2_v2"
+  admin_username = "appadmin"
+
+  # Reference app subnet id from the network module; here we assume
+  # module.network exposes an output app_subnet_id (or map of subnet ids).
+  app_subnet_id = element(values(module.network.spoke_vnets), 1)
+}
+
+# DB module: create a managed DB and restrict access to the app subnet range.
+module "db" {
+  source = "../modules/db"
+
+  resource_group_name = "rg-staging"
+  location            = "westeurope"
+  prefix              = "stg"
+
+  db_admin    = var.db_admin
+  db_password = var.db_password
+
+  sku_name   = "B_Gen5_1"
+  storage_mb = 51200
+
+  # These IPs should map to the NAT / egress IP for the app subnet or
+  # be replaced by a private endpoint configuration (recommended).
+  app_subnet_start_ip = "10.3.1.4"
+  app_subnet_end_ip   = "10.3.1.255"
+}
