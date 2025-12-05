@@ -40,8 +40,15 @@ resource "azurerm_linux_virtual_machine_scale_set" "app_vmss" {
   # with managed upgrades via VMSS rolling upgrades feature.
   upgrade_mode = "Manual"
 
-  # Enable OS disk ephemeral settings, caching, or extensions via
-  # additional blocks if needed (omitted here for brevity).
+  # Enable OS disk ephemeral settings and caching
+  os_disk {
+    caching              = "ReadOnly"
+    storage_account_type = "Standard_LRS"
+
+    diff_disk_settings {
+      option = "Local"
+    }
+  }
 }
 
 # Note: autoscale settings are configured using azurerm_monitor_autoscale_setting
