@@ -40,11 +40,3 @@ variable "auto_grow_enabled" {
   type    = bool
   default = true
 }
-
-variable "app_subnet_start_ip" {
-  type = string
-}
-
-variable "app_subnet_end_ip" {
-  type = string
-}

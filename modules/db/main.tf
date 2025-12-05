@@ -1,6 +1,6 @@
 # Deploy a managed MySQL server with public network access disabled by default.
 # Using managed services reduces operational overhead and provides built-in backups.
-resource "azurerm_mysql_server" "db" {
+resource "azurerm_mysql_flexible_server" "db" {
   name                = "${var.prefix}-mysql"
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -17,18 +17,19 @@ resource "azurerm_mysql_server" "db" {
   auto_grow_enabled     = var.auto_grow_enabled
 
   # Disallow public access by default — recommend private endpoint or vnet integration.
-  public_network_access_enabled = false
+  public_network_access_enabled = Disabled
 }
 
-# Configure firewall rule to allow the application subnet (or the NAT egress IP)
-# to reach the database. If using private endpoint, firewall rules may be unnecessary.
-resource "azurerm_mysql_firewall_rule" "allow_app_subnet" {
-  name                = "allow_app_subnet"
+resource "azurerm_private_endpoint" "mysql_pe" {
+  name                = "${var.prefix}-mysql-pe"
+  location            = var.location
   resource_group_name = var.resource_group_name
-  server_name         = azurerm_mysql_server.db.name
+  subnet_id           = var.private_endpoint_subnet_id
 
-  # Terraform's mysql firewall rule expects an IP range. If your app lives
-  # in a VNet, you might instead configure Private Endpoint or VNet Service Endpoint.
-  start_ip_address = var.app_subnet_start_ip
-  end_ip_address   = var.app_subnet_end_ip
+  private_service_connection {
+    name                           = "mysql-pe-conn"
+    private_connection_resource_id = azurerm_mysql_flexible_server.db.id
+    subresource_names              = ["mysqlServer"]
+    is_manual_connection           = false
+  }
 }

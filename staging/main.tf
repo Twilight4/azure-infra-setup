@@ -65,9 +65,4 @@ module "db" {
 
   sku_name   = "B_Gen5_1"
   storage_mb = 51200
-
-  # These IPs should map to the NAT / egress IP for the app subnet or
-  # be replaced by a private endpoint configuration (recommended).
-  app_subnet_start_ip = "10.3.1.4"
-  app_subnet_end_ip   = "10.3.1.255"
 }
