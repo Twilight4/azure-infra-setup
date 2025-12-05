@@ -134,6 +134,9 @@ Terraform needs a remote backend to store its state.
 # Create a resource group
 az group create -n rg-tfstate -l <REGION>
 
+# To List all resource groups located in the west europe region
+az group list --query "[?location=='westeurope']"
+
 # Create a storage account (account name must be globally unique)
 az storage account create \
   --name tfstatestorage<UNIQUE> \
@@ -141,9 +144,6 @@ az storage account create \
   --location westeurope \
   --sku Standard_LRS \
   --subscription <subscription-id>
-
-# To List all resource groups located in the west europe region
-az group list --query "[?location=='westeurope']"
 
 # Get storage account key
 KEY=$(az storage account keys list -g rg-tfstate -n tfstatestorage<UNIQUE> --query "[0].value" -o tsv)
@@ -161,17 +161,17 @@ key                  = "dev.terraform.tfstate"             # Key path for the sp
 
 ** Deploy the infrastructure
 #+begin_src shell
-# Go to the environment folder:
-cd environments/dev
+# Initialize terraform from /staging directory
+cd staging/
 
 # Initialize Terraform (If you changed backend settings, you need to run terraform init -reconfigure)
 terraform init -reconfigure
 
 # Preview changes
-terraform plan -var-file=../../environments/dev.tfvars
+terraform plan -var-file=../environments/dev.tfvars
 
 # Apply changes - this will create all resources: VNets, subnets, firewall, VM Scale Set, database, etc
-terraform apply -var-file=../../environments/dev.tfvars
+terraform apply -var-file=../environments/dev.tfvars
 #+end_src
 
 ** Verify deployment
