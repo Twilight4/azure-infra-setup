@@ -162,12 +162,12 @@ terraform apply -var-file=../../environments/dev.tfvars
 #+end_src
 
 ** Verify deployment
-Using Azure Portal
+**** Using Azure Portal
 - Go to [[https://portal.azure.com/][portal.azure.com]]
 - Navigate to =Resource Groups= → select your environment group (e.g., =rg-dev=)
 - Verify the resources exist
 
-Using Azure CLI
+**** Using Azure CLI
 #+begin_src shell
 # check the resource group and resources
 az group list -o table
