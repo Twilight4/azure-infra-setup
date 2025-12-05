@@ -1,3 +1,3 @@
-/azure-infra-setup/staging/.terraform.lock.hcl
-/azure-infra-setup/staging/.terraform/
-/azure-infra-setup/staging/terraform.tfplan
+/staging/.terraform.lock.hcl
+/staging/.terraform/
+/staging/terraform.tfplan
