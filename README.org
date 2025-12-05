@@ -12,7 +12,7 @@
 - [[#roadmap-wip][Roadmap WIP]]
 
 * 3-layer cloud infrastructure on Azure
-This repo builds a hub-and-spoke network, an App Service (Free F1), and an Azure SQL Basic DB (250 MB) for learning. It intentionally avoids paid services (no VMSS, no Azure Firewall, no Private Endpoints).
+This repo builds an App Service (Free F1), and an Azure SQL Basic DB (250 MB) for learning. It intentionally avoids paid services (no VMSS, no Azure Firewall, no Private Endpoints).
 
 See =staging/= for environment entrypoint and =modules/= for reusable components.
 
@@ -25,30 +25,29 @@ azure-three-layer-terraform/
 ├── environments/
 │ ├── dev.tfvars
 │ └── prod.tfvars
-├── global/
-│ ├── backend.tf # example remote state using azurerm storage account
+├── staging/
+│ ├── main.tf
+│ ├── backend.tf
+│ ├── outputs.tf
+│ ├── variables.tf
 │ └── providers.tf
 ├── modules/
 │ ├── network/
-│ │ ├── main.tf # hub-and-spoke / vnet + subnets + peering + route tables + NAT
+│ │ ├── main.tf
 │ │ ├── variables.tf
 │ │ └── outputs.tf
 │ ├── security/
-│ │ ├── main.tf # Azure Firewall, NSGs, Route Tables, Key Vault policies
+│ │ ├── main.tf
 │ │ ├── variables.tf
 │ │ └── outputs.tf
 │ ├── compute/
-│ │ ├── main.tf # VM scale set or AKS plus application gateway / load balancer
+│ │ ├── main.tf
 │ │ ├── variables.tf
 │ │ └── outputs.tf
 │ └── db/
-│ ├── main.tf # Azure Database for Azure MSSQL Server (Free 250 MB Database)
-│ ├── variables.tf
-│ └── outputs.tf
-├── staging/ # example environment that composes modules
-│ ├── main.tf
-│ ├── variables.tf
-│ └── outputs.tf
+│   ├── main.tf
+│   ├── variables.tf
+│   └── outputs.tf
 └── versions.tf
 #+end_src
 
