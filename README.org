@@ -12,7 +12,11 @@
 - [[#roadmap-wip][Roadmap WIP]]
 
 * 3-layer cloud infrastructure on Azure
-This repo demonstrates a secure, scalable three-layer (web/app/db) Azure architecture using Terraform modules. It follows hub-and-spoke network pattern, central security services (Azure Firewall + NSGs), managed DBs with private network access, and scaleable compute.
+This repo builds a hub-and-spoke network, an App Service (Free F1), and an Azure SQL Basic DB (250 MB) for learning. It intentionally avoids paid services (no VMSS, no Azure Firewall, no Private Endpoints).
+
+See =staging/= for environment entrypoint and =modules/= for reusable components.
+
+Notes: this setup is *for learning* and *not production-ready*. Do not expose secrets in VCS.
 
 ** Repository layout
 #+begin_src shell
@@ -70,7 +74,6 @@ azure-three-layer-terraform/
 3. *Managed DB with private access* — keep DBs off public internet and restrict access from app subnets only. (The example module configures firewall rules and disables public access.)
 4. *Remote state + locking* — store Terraform state in an Azure Storage Account container with blob locking or use Terraform Cloud. Avoid local state for teams.
 5. *Modules & standard structure* — keep reusable modules (network, security, compute, db) to make environments (dev/staging/prod) easy to manage and test.
-
 
 * Steps to deploy
 ** Prerequisites
