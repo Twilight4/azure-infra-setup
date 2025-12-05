@@ -1,4 +1,17 @@
-* Azure 3-layer Terraform
+* Table of Contents :toc:
+- [[#3-layer-cloud-infrastructure-on-azure][3-layer cloud infrastructure on Azure]]
+  - [[#repository-layout][Repository layout]]
+  - [[#project-overview][Project overview]]
+- [[#steps-to-deploy][Steps to deploy]]
+  - [[#prerequisites][Prerequisites]]
+  - [[#authenticate-with-azure][Authenticate with Azure]]
+  - [[#create-terraform-state-backend][Create Terraform State Backend]]
+  - [[#deploy-the-infrastructure][Deploy the infrastructure]]
+  - [[#verify-deployment][Verify deployment]]
+  - [[#clean-up][Clean up]]
+- [[#roadmap-wip][Roadmap WIP]]
+
+* 3-layer cloud infrastructure on Azure
 This repo demonstrates a secure, scalable three-layer (web/app/db) Azure architecture using Terraform modules. It follows hub-and-spoke network pattern, central security services (Azure Firewall + NSGs), managed DBs with private network access, and scaleable compute.
 
 ** Repository layout
