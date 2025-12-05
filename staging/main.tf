@@ -22,3 +22,15 @@ module "network" {
 
   allow_gateway_transit = true
 }
+
+# Security module uses outputs from the network module (e.g. firewall subnet id)
+module "security" {
+  source = "../modules/security"
+
+  resource_group_name = "rg-staging"
+  location            = "westeurope"
+  prefix              = "stg"
+
+  # Pass the hub firewall subnet id so the firewall can be deployed there.
+  firewall_subnet_id = module.network.hub_firewall_subnet_id
+}
