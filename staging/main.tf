@@ -63,7 +63,4 @@ module "db" {
 
   db_admin    = var.db_admin
   db_password = var.db_password
-
-  private_endpoint_subnet_id = module.network.private_endpoint_subnet_id
-  vnet_id                    = module.network.vnet_id
 }

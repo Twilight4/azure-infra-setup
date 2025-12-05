@@ -20,13 +20,3 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
-
-variable "private_endpoint_subnet_id" {
-  type        = string
-  description = "Subnet ID for private endpoint"
-}
-
-variable "vnet_id" {
-  type        = string
-  description = "ID of the VNet where private DNS link should be created"
-}

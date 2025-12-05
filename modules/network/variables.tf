@@ -18,15 +18,6 @@ variable "hub_address_space" {
   type        = list(string)
 }
 
-variable "hub_pe_subnet_prefixes" {
-  type = list(string)
-}
-
-variable "hub_fw_subnet_prefixes" {
-  description = "Subnet prefixes for AzureFirewallSubnet in the hub."
-  type        = list(string)
-}
-
 variable "spokes" {
   description = "Map of spoke names to their configuration (address_space, optional subnet_prefixes)."
   type = map(object({

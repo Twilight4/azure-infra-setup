@@ -5,32 +5,13 @@ resource "azurerm_resource_group" "rg" {
 }
 
 # Create the hub virtual network which will host shared services
-# (firewall, NAT, gateways). The hub address space can be larger to
+# (NAT, gateways). The hub address space can be larger to
 # accommodate multiple spoke routable ranges.
 resource "azurerm_virtual_network" "hub_vnet" {
   name                = "${var.prefix}-hub-vnet"
   address_space       = var.hub_address_space
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-}
-
-# Create the subnet specifically named for Azure Firewall. This name
-# is required by Azure Firewall (AzureFirewallSubnet).
-resource "azurerm_subnet" "hub_fw_subnet" {
-  name                 = "AzureFirewallSubnet"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.hub_vnet.name
-  address_prefixes     = var.hub_fw_subnet_prefixes
-}
-
-resource "azurerm_subnet" "private_endpoint_subnet" {
-  name                 = "PrivateEndpointSubnet"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.hub.name
-  address_prefixes     = var.hub_pe_subnet_prefixes
-
-  # Required for Private Endpoints
-  enforce_private_link_endpoint_network_policies = false
 }
 
 # Create a set of spoke VNets. Using for_each lets the module accept
