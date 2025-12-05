@@ -19,8 +19,10 @@ resource "azurerm_mssql_database" "db" {
   server_id = azurerm_mssql_server.db_server.id
 
   # Free tier settings
-  edition     = "Basic"
-  max_size_gb = 0.25
+  sku_name                       = "GP_S_Gen5_1"
+  max_size_gb                    = 0.25
+  use_free_limit                 = true
+  free_limit_exhaustion_behavior = "AutoPause"
 
   # Optional but recommended
   zone_redundant = false
