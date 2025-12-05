@@ -38,7 +38,7 @@ azure-three-layer-terraform/
 │ │ ├── variables.tf
 │ │ └── outputs.tf
 │ └── db/
-│ ├── main.tf # Azure Database for PostgreSQL / MySQL / or managed SQL
+│ ├── main.tf # Azure Database for Azure MSSQL Server (Free 250 MB Database)
 │ ├── variables.tf
 │ └── outputs.tf
 ├── staging/ # example environment that composes modules
@@ -54,14 +54,14 @@ azure-three-layer-terraform/
   + *network* — hub-and-spoke VNet(s), peering, NAT/route table hooks
   + *security* — Azure Firewall, NSGs, route tables, basic Key Vault wiring
   + *compute* — VM Scale Set example (can be swapped for AKS) and hooks for autoscale
-  + *db* — managed DB (MySQL shown) with private access and firewall rule example
+  + *db* — managed DB (Azure MSSQL Server) with private access and firewall rule example
 - Root environment example (staging) that composes the modules.
 - Remote-state backend example using *azurerm* storage account.
 
 *** Architecture overview (three-layer, Azure-focused)
 - *Presentation (web) layer* in its own spoke VNet/subnet, fronted by Application Gateway (WAF) or public LB.
 - *Application (app) layer* in a separate spoke — hosts app server VMSS or AKS.
-- *Data (db) layer* in its own spoke containing managed DB services (Azure Database for PostgreSQL / MySQL / SQL) with =public_network_access_enabled = false= so only private connectivity is allowed.
+- *Data (db) layer* in its own spoke containing managed DB services (Azure Database Azure MSSQL) with =public_network_access_enabled = false= so only private connectivity is allowed.
 - *Shared Hub VNet* contains central services: Azure Firewall, VPN/ExpressRoute gateways, NAT, and peering to spokes. This follows Azure =hub-and-spoke= best practices. 
 
 *** Key security and operational choices

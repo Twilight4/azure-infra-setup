@@ -1,12 +1,12 @@
+variable "prefix" {
+  type = string
+}
+
 variable "resource_group_name" {
   type = string
 }
 
 variable "location" {
-  type = string
-}
-
-variable "prefix" {
   type = string
 }
 
@@ -21,22 +21,12 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "sku_name" {
-  type    = string
-  default = "B_Gen5_1"
+variable "private_endpoint_subnet_id" {
+  type        = string
+  description = "Subnet ID for private endpoint"
 }
 
-variable "storage_mb" {
-  type    = number
-  default = 51200
-}
-
-variable "backup_retention_days" {
-  type    = number
-  default = 7
-}
-
-variable "auto_grow_enabled" {
-  type    = bool
-  default = true
+variable "vnet_id" {
+  type        = string
+  description = "ID of the VNet where private DNS link should be created"
 }

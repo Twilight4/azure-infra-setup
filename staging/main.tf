@@ -11,6 +11,7 @@ module "network" {
   # Hub address space and the AzureFirewallSubnet prefixes
   hub_address_space      = ["10.0.0.0/16"]
   hub_fw_subnet_prefixes = ["10.0.1.0/24"]
+  hub_pe_subnet_prefixes = ["10.0.2.0/24"]
 
   # Spokes map: each spoke gets a VNet with an address space and
   # optional subnet prefixes. This is flexible for multi-tier apps.
@@ -63,6 +64,6 @@ module "db" {
   db_admin    = var.db_admin
   db_password = var.db_password
 
-  sku_name   = "B_Gen5_1"
-  storage_mb = 51200
+  private_endpoint_subnet_id = module.network.private_endpoint_subnet_id
+  vnet_id                    = module.network.vnet_id
 }

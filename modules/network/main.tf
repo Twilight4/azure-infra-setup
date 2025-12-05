@@ -23,6 +23,16 @@ resource "azurerm_subnet" "hub_fw_subnet" {
   address_prefixes     = var.hub_fw_subnet_prefixes
 }
 
+resource "azurerm_subnet" "private_endpoint_subnet" {
+  name                 = "PrivateEndpointSubnet"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.hub.name
+  address_prefixes     = var.hub_pe_subnet_prefixes
+
+  # Required for Private Endpoints
+  enforce_private_link_endpoint_network_policies = false
+}
+
 # Create a set of spoke VNets. Using for_each lets the module accept
 # an input map of spokes and create resources for each entry.
 resource "azurerm_virtual_network" "spoke_vnet" {
