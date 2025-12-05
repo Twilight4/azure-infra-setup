@@ -36,5 +36,5 @@ resource "azurerm_subnet" "spoke_subnet" {
 
   # If spokes passed a specific subnet prefix map, prefer that, else
   # leave it to be provided by a higher-level variable.
-  address_prefixes = lookup(var.spokes, each.key, {}).subnet_prefixes
+  address_prefixes = var.spokes[each.key].subnet_prefixes
 }
