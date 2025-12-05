@@ -4,14 +4,12 @@
 module "network" {
   source = "../modules/network"
 
-  resource_group_name = "rg-staging"
-  location            = "westeurope"
-  prefix              = "stg"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  prefix              = var.prefix
 
-  # Hub address space and the AzureFirewallSubnet prefixes
-  hub_address_space      = ["10.0.0.0/16"]
-  hub_fw_subnet_prefixes = ["10.0.1.0/24"]
-  hub_pe_subnet_prefixes = ["10.0.2.0/24"]
+  # Hub address space
+  hub_address_space = ["10.0.0.0/16"]
 
   # Spokes map: each spoke gets a VNet with an address space and
   # optional subnet prefixes. This is flexible for multi-tier apps.
@@ -21,46 +19,42 @@ module "network" {
     db  = { address_space = "10.3.0.0/16", subnet_prefixes = ["10.3.1.0/24"] }
   }
 
-  allow_gateway_transit = true
+  allow_gateway_transit = false
 }
 
-# Security module uses outputs from the network module (e.g. firewall subnet id)
 module "security" {
   source = "../modules/security"
 
-  resource_group_name = "rg-staging"
-  location            = "westeurope"
-  prefix              = "stg"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  prefix              = var.prefix
 
-  # Pass the hub firewall subnet id so the firewall can be deployed there.
-  firewall_subnet_id = module.network.hub_firewall_subnet_id
+  # Pass web subnet id for NSG association
+  web_subnet_id = module.network.spoke_subnet_ids["web"]
 }
 
 module "compute" {
   source = "../modules/compute"
 
-  resource_group_name = "rg-staging"
-  location            = "westeurope"
-  prefix              = "stg"
+  prefix              = var.prefix
+  resource_group_name = var.resource_group_name
+  location            = var.location
 
-  # initial instance count; use autoscale resource for production scaling policies
-  instance_count = 2
-  vm_sku         = "Standard_DS2_v2"
-  admin_username = "appadmin"
-
-  # Reference app subnet id from the network module; here we assume
-  # module.network exposes an output app_subnet_id (or map of subnet ids).
-  app_subnet_id = element(values(module.network.spoke_vnets), 1)
+  database_hostname = module.db.sql_fqdn
+  database_username = var.database_username
+  database_password = var.database_password
 }
 
-# DB module: create a managed DB and restrict access to the app subnet range.
 module "db" {
   source = "../modules/db"
 
-  resource_group_name = "rg-staging"
-  location            = "westeurope"
-  prefix              = "stg"
+  prefix              = var.prefix
+  resource_group_name = var.resource_group_name
+  location            = var.location
 
   db_admin    = var.db_admin
   db_password = var.db_password
+
+  # Public SQL access with firewall rules limited by allowed_ips
+  allowed_ips = var.allowed_ips
 }
