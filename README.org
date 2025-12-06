@@ -133,32 +133,17 @@ az login --service-principal \
 Terraform needs a remote backend to store its state.
 
 #+begin_src shell
-# Create a resource group
-az group create -n rg-tfstate -l <REGION>
-
-# To List all resource groups located in the west europe region
-az group list --query "[?location=='westeurope']"
-
-# Create a storage account (account name must be globally unique)
-az storage account create \
-  --name tfstatestorage<UNIQUE> \
-  --resource-group rg-tfstate \
-  --location westeurope \
-  --sku Standard_LRS \
-  --subscription <subscription-id>
-
-# Get storage account key
-KEY=$(az storage account keys list -g rg-tfstate -n tfstatestorage<UNIQUE> --query "[0].value" -o tsv)
-# Create a blob container for terraform state
-az storage container create --name tfstate --account-name tfstatestorage<UNIQUE> --account-key $KEY
+# Modify the variables of backend.sh script and run the script
+cd staging
+./backend.sh
 #+end_src
 
 Then update =global/backend.tf= to point at this container.
 #+begin_src tf
-resource_group_name  = "rg-tfstate"                        # Resource group where the storage account lives
-storage_account_name = "tfstatestorage<UNIQUE>"            # Storage account name (must be globally unique)
-container_name       = "tfstate"                           # Container inside the storage account used to store the state blob
-key                  = "dev.terraform.tfstate"             # Key path for the specific state file (use different keys per environment)
+resource_group_name  = "rg-tfstate"
+storage_account_name = "tfstatestorage4123"
+container_name       = "tfstate"
+key                  = "dev.terraform.tfstate"
 #+end_src
 
 ** Deploy the infrastructure
