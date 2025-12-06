@@ -112,23 +112,34 @@ az storage account list -g rg-tfstate -o table
 terraform destroy -var-file=dev.tfvars
 
 # Remove service principal named tf-sp-learning (if created)
-az ad sp delete --id tf-sp-learning
+az ad sp list --display-name tf-sp-project -o table
+az ad sp delete --id <ID>
+# Verify
+az ad sp list --display-name tf-sp-project -o table
 
 # Remove a blob container for terraform state named tfstatestorage4123
 az storage container delete \
-  --name tfstatestorage4123 \
+  --name tfstate \
   --account-name tfstatestorage4123
+# Expected output
+{
+  "deleted": true
+}
 
 # Remove storage account for that rg-tfstate resource group named tfstatestorage4123
 az storage account delete \
   --name tfstatestorage4123 \
   --resource-group rg-tfstate \
   --yes
+# Verify
+az storage account list --resource-group rg-tfstate --output table
 
 # Remove a resource group named rg-tfstate
 az group delete \
   --name rg-tfstate \
   --yes --no-wait
+# Verify
+az group list --output table
 #+end_src
 
 * Roadmap WIP
