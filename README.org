@@ -1,7 +1,5 @@
 * Table of Contents :toc:
-- [[#3-layer-cloud-infrastructure-on-azure][3-layer cloud infrastructure on Azure]]
-  - [[#repository-layout][Repository layout]]
-  - [[#project-overview][Project overview]]
+- [[#repository-layout][Repository layout]]
 - [[#steps-to-deploy][Steps to deploy]]
   - [[#prerequisites][Prerequisites]]
   - [[#authenticate-with-azure][Authenticate with Azure]]
@@ -11,40 +9,21 @@
   - [[#clean-up][Clean up]]
 - [[#roadmap-wip][Roadmap WIP]]
 
-* 3-layer cloud infrastructure on Azure
-This repo builds an App Service (Free F1), and an Azure SQL Basic DB (250 MB) for learning. It intentionally avoids paid services (no VMSS, no Azure Firewall, no Private Endpoints).
-
-See =staging/= for environment entrypoint and =modules/= for reusable components.
-
-Notes: this setup is *for learning* and *not production-ready*. Do not expose secrets in VCS.
-
-** Repository layout
+* Repository layout
+This repo builds resources within the free tier Azure subscription limitations.
 #+begin_src shell
 azure-three-layer-terraform/
+├──  resources
+│   ├──  variables.tf
+│   ├──  main.tf
+│   └──  dev.tfvars
+├──  global
+│   ├──  versions.tf
+│   ├──  providers.tf
+│   ├──  backend.tf
+│   └──  backend.sh
+└──  README.org
 #+end_src
-
-** Project overview
-*** Repo
-- Modular layout with these modules:
-  + *network* — hub-and-spoke VNet(s), peering, NAT/route table hooks
-  + *security* — Azure Firewall, NSGs, route tables, basic Key Vault wiring
-  + *compute* — VM Scale Set example (can be swapped for AKS) and hooks for autoscale
-  + *db* — managed DB (Azure MSSQL Server) with private access and firewall rule example
-- Root environment example (staging) that composes the modules.
-- Remote-state backend example using *azurerm* storage account.
-
-*** Architecture overview (three-layer, Azure-focused)
-- *Presentation (web) layer* in its own spoke VNet/subnet, fronted by Application Gateway (WAF) or public LB.
-- *Application (app) layer* in a separate spoke — hosts app server VMSS or AKS.
-- *Data (db) layer* in its own spoke containing managed DB services (Azure Database Azure MSSQL) with =public_network_access_enabled = false= so only private connectivity is allowed.
-- *Shared Hub VNet* contains central services: Azure Firewall, VPN/ExpressRoute gateways, NAT, and peering to spokes. This follows Azure =hub-and-spoke= best practices. 
-
-*** Key security and operational choices
-1. *Hub-and-spoke networking* — centralizes security, simplifies routing and egress, isolates workloads.
-2. *Azure Firewall + NSGs* — firewall for east-west and perimeter rules; NSGs for subnet-level micro-segmentation. Use firewall for inspection and NSGs for fast path filtering. Azure docs/tech guidance confirm this pattern. 
-3. *Managed DB with private access* — keep DBs off public internet and restrict access from app subnets only. (The example module configures firewall rules and disables public access.)
-4. *Remote state + locking* — store Terraform state in an Azure Storage Account container with blob locking or use Terraform Cloud. Avoid local state for teams.
-5. *Modules & standard structure* — keep reusable modules (network, security, compute, db) to make environments (dev/staging/prod) easy to manage and test.
 
 * Steps to deploy
 ** Prerequisites
