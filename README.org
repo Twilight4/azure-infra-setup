@@ -20,7 +20,7 @@ Service principal is safer for CI/CD, but interactive login is fine for learning
 
 **** Option A — Interactive login (simplest)
 #+begin_src shell
-# Your Azure CLI will use your logged-in account for Terraform.
+# Your Azure CLI will use your logged-in account for Terraform
 az login
 #+end_src
 
@@ -85,7 +85,6 @@ key                  = "dev.terraform.tfstate"
 terraform init -reconfigure
 
 # Preview changes
-cd resources/
 terraform plan -var-file=dev.tfvars
 
 # Apply changes - this will create all resources

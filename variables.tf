@@ -14,3 +14,6 @@ variable "storage_account_name" {
 variable "index_document" {
   type = string
 }
+variable "index_404_document" {
+  type = string
+}
