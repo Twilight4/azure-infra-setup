@@ -1,5 +1,4 @@
 * Table of Contents :toc:
-- [[#repository-layout][Repository layout]]
 - [[#steps-to-deploy][Steps to deploy]]
   - [[#prerequisites][Prerequisites]]
   - [[#authenticate-with-azure][Authenticate with Azure]]
@@ -8,22 +7,6 @@
   - [[#verify-deployment][Verify deployment]]
   - [[#clean-up][Clean up]]
 - [[#roadmap-wip][Roadmap WIP]]
-
-* Repository layout
-This repo builds resources within the free tier Azure subscription limitations.
-#+begin_src shell
-azure-three-layer-terraform/
-├──  resources
-│   ├──  variables.tf
-│   ├──  main.tf
-│   └──  dev.tfvars
-├──  global
-│   ├──  versions.tf
-│   ├──  providers.tf
-│   ├──  backend.tf
-│   └──  backend.sh
-└──  README.org
-#+end_src
 
 * Steps to deploy
 ** Prerequisites
@@ -102,6 +85,7 @@ key                  = "dev.terraform.tfstate"
 terraform init -reconfigure
 
 # Preview changes
+cd resources/
 terraform plan -var-file=dev.tfvars
 
 # Apply changes - this will create all resources
