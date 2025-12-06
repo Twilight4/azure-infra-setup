@@ -21,34 +21,6 @@ Notes: this setup is *for learning* and *not production-ready*. Do not expose se
 ** Repository layout
 #+begin_src shell
 azure-three-layer-terraform/
-├── README.md
-├── environments/
-│ ├── dev.tfvars
-│ └── prod.tfvars
-├── staging/
-│ ├── main.tf
-│ ├── backend.tf
-│ ├── outputs.tf
-│ ├── variables.tf
-│ └── providers.tf
-├── modules/
-│ ├── network/
-│ │ ├── main.tf
-│ │ ├── variables.tf
-│ │ └── outputs.tf
-│ ├── security/
-│ │ ├── main.tf
-│ │ ├── variables.tf
-│ │ └── outputs.tf
-│ ├── compute/
-│ │ ├── main.tf
-│ │ ├── variables.tf
-│ │ └── outputs.tf
-│ └── db/
-│   ├── main.tf
-│   ├── variables.tf
-│   └── outputs.tf
-└── versions.tf
 #+end_src
 
 ** Project overview
@@ -134,7 +106,6 @@ Terraform needs a remote backend to store its state.
 
 #+begin_src shell
 # Modify the variables of backend.sh script and run the script
-cd staging
 ./backend.sh
 #+end_src
 
@@ -148,17 +119,14 @@ key                  = "dev.terraform.tfstate"
 
 ** Deploy the infrastructure
 #+begin_src shell
-# Initialize terraform from /staging directory
-cd staging/
-
 # Initialize Terraform (If you changed backend settings, you need to run terraform init -reconfigure)
 terraform init -reconfigure
 
 # Preview changes
-terraform plan -var-file=../environments/dev.tfvars
+terraform plan -var-file=dev.tfvars
 
-# Apply changes - this will create all resources: VNets, subnets, firewall, VM Scale Set, database, etc
-terraform apply -var-file=../environments/dev.tfvars
+# Apply changes - this will create all resources
+terraform apply -var-file=dev.tfvars
 #+end_src
 
 ** Verify deployment
@@ -172,12 +140,6 @@ terraform apply -var-file=../environments/dev.tfvars
 # check the resource group and resources
 az group list -o table
 
-# List virtual networks in the RG
-az network vnet list -g rg-dev -o table
-
-# Show firewall public IP
-az network public-ip show -g rg-staging -n stg-fw-pip --query "{ip: ipAddress}" -o tsv
-
 # Show storage account for the resource group
 az storage account list -g rg-tfstate -o table
 #+end_src
@@ -185,19 +147,19 @@ az storage account list -g rg-tfstate -o table
 ** Clean up
 #+begin_src shell
 # Remove all terraform resources and avoid charges
-terraform destroy -var-file=../../environments/dev.tfvars
+terraform destroy -var-file=dev.tfvars
 
-# Remove service principal named tf-sp-learning
+# Remove service principal named tf-sp-learning (if created)
 az ad sp delete --id tf-sp-learning
 
 # Remove a blob container for terraform state named tfstatestorage4123
 az storage container delete \
-  --name tfstatestorage<UNIQUE> \
-  --account-name tfstatestorage<UNIQUE>
+  --name tfstatestorage4123 \
+  --account-name tfstatestorage4123
 
-# Remove storage account for that rg-tfstate resource group named tfstatestorage<UNIQUE>
+# Remove storage account for that rg-tfstate resource group named tfstatestorage4123
 az storage account delete \
-  --name tfstatestorage<UNIQUE> \
+  --name tfstatestorage4123 \
   --resource-group rg-tfstate \
   --yes
 
@@ -209,10 +171,3 @@ az group delete \
 
 * Roadmap WIP
 - [ ] Use Azure Key Vault to provide secrets (DB password, etc.) and do not store secrets in git or =.tfvars= checked into source.
-- [ ] Add CI pipeline
-- [ ] =modules/appgw/= for Application Gateway + WAF module
-- [ ] =modules/aks/= if using containers (AKS + managed identities)
-- [ ] =modules/monitoring/= for Log Analytics workspace, diagnostic settings, alerts
-- [ ] Put compute behind Azure Load Balancer (internal) or Application Gateway (WAF+TLS termination). Use VMSS or AKS to scale application layer.
-- [ ] Use Availability Zones where available for Firewall PIP and compute resources like VMSS/DB (or zone-redundant SKUs). See Azure Firewall deploy docs for zone examples. 
-- [ ] Monitor and autoscale using Azure Monitor autoscale rules and alerts.
