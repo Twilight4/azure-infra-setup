@@ -6,7 +6,6 @@
   - [[#deploy-the-infrastructure][Deploy the infrastructure]]
   - [[#verify-deployment][Verify deployment]]
   - [[#clean-up][Clean up]]
-- [[#roadmap-wip][Roadmap WIP]]
 
 * Steps to deploy
 ** Prerequisites
@@ -141,6 +140,3 @@ az group delete \
 # Verify
 az group list --output table
 #+end_src
-
-* Roadmap WIP
-- [ ] Use Azure Key Vault to provide secrets (DB password, etc.) and do not store secrets in git or =.tfvars= checked into source.
